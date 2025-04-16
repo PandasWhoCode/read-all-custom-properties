@@ -1,0 +1,18 @@
+name: 'Read Custom Properties of All Repos in Organization'
+description: 'Read all the custom properties and values of all repos in an organization'
+author: 'Andrew Brandt <andrew.brandt@hashgraph.com>'
+organization: 'PandasWhoCode'
+branding:
+  icon: 'check-circle'
+  color: 'black'
+
+inputs:
+  token:
+    description: 'Personal Access Token'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: List all repos in the Org
+      shell: bash
