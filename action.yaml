@@ -26,6 +26,8 @@ runs:
 
     - name: List all repos in org
       shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
       run: |
         ORG_NAME=$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f1)
         echo "Org name is: ${ORG_NAME}"
