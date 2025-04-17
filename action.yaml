@@ -1,0 +1,138 @@
+name: 'Read Custom Properties of All Repos in Organization'
+description: 'Read all the custom properties and values of all repos in an organization'
+author: 'Andrew Brandt <andrew.brandt@hashgraph.com>'
+organization: 'PandasWhoCode'
+branding:
+  icon: 'check-circle'
+  color: 'black'
+
+inputs:
+  token:
+    description: 'Personal Access Token'
+    required: true
+  template:
+    description: 'Template for Custom Property Fields'
+    required: false
+  overwrite-existing-file:
+    description: 'Overwrite existing repo-properties.yaml with read values'
+    default: false
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: Install yq (mikefarah's version)
+      shell: bash
+      run: |
+        sudo wget --quiet https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
+        sudo chmod +x /usr/bin/yq
+        yq --version  # confirm installed
+    
+    
+
+    - name: List all repos in org
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        ORG_NAME=$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f1)
+        echo "Org name is: ${ORG_NAME}"
+        echo "${ORG_NAME}" > org-name.txt
+        echo "Fetching repos for organization: ${{ inputs.org }}"
+        gh api --paginate "orgs/$ORG_NAME/repos" --jq '.[].name' > repo-list.txt
+        echo "Repos written to repo-list.txt"
+
+    - name: Print out all repos in file
+      shell: bash
+      run: |
+        echo "Org name is:"
+        cat org-name.txt
+        echo "Full list of repos in org:"
+        cat repo-list.txt
+
+    - name: Fetch custom properties for each repo
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        ORG_NAME="${GITHUB_REPOSITORY%%/*}"
+        echo "Fetching custom properties for repos in org: ${ORG_NAME}"
+        
+        echo "{" > read-repo-properties.json
+        FIRST=1
+        while IFS= read -r REPO_NAME; do
+          echo "Getting properties for ${REPO_NAME}..."
+          RESPONSE=$(gh api "repos/${ORG_NAME}/${REPO_NAME}/properties/values" || echo "{}")
+        
+          # If not the first, prepend a comma to separate JSON entries
+          if [ "$FIRST" -eq 0 ]; then
+            echo "," >> read-repo-properties.json
+          fi
+          FIRST=0
+        
+          # Output as "repo-name": { ...props... }
+          echo "\"${REPO_NAME}\": $RESPONSE" >> read-repo-properties.json
+        done < repo-list.txt
+        echo "}" >> read-repo-properties.json
+        
+        echo "Custom properties written to read-repo-properties.json"
+
+    - name: Print out the full read-repo-properties.json file
+      shell: bash
+      run: |
+        echo "Full read-repo-properties.json file is:"
+        cat read-repo-properties.json
+
+    - name: Confirm the template file exists
+      shell: bash
+      run: |
+        echo "The template file for JSON output is:"
+        cat ${{ inputs.template }}
+
+    - name: Convert repo properties to YAML using template
+      shell: bash
+      run: |
+        ORG_NAME=$(cat org-name.txt)
+
+        TEMPLATE=$(cat ${{ inputs.template }})
+
+        {
+          echo "org: $ORG_NAME"
+          echo "repositories:"
+          jq -r --argjson fields "$TEMPLATE" '
+            to_entries[] |
+            .key as $repoName |
+            .value as $props |
+            (
+              "  - name: \($repoName)\n" +
+              (
+                $fields
+                | map(
+                    . as $key |
+                    (
+                      ($props | map({(.property_name): .value}) | add)[$key] // "" 
+                      | "    \($key): \"\(.)\""
+                    )
+                  )
+                | join("\n")
+              )
+            )
+          ' read-repo-properties.json
+        } > read-repo-properties.yaml
+
+        echo "YAML written to read-repo-properties.yaml"
+
+    - name: Print out the read-repo-properties.yaml
+      shell: bash
+      run: |
+        echo "Full read-repo-properties.yaml file is:"
+        cat read-repo-properties.yaml
+
+    - name: Overwrite existing file (if applicable)
+      if: inputs.overwrite-existing-file == true
+      shell: bash
+      run: |
+        echo "Overwriting existing repo-properties.yaml"
+        mv read-repo-properties.yaml repo-properties.yaml
+
