@@ -77,18 +77,32 @@ runs:
         echo "Full repo-properties.json file is:"
         cat repo-properties.json
 
-    - name: Convert JSON to formatted YAML
+    - name: Convert repo properties JSON to YAML
       shell: bash
       run: |
         ORG_NAME=$(cat org-name.txt)
-        echo "org: $ORG_NAME" > repo-properties.yaml
-        echo "repositories:" >> repo-properties.yaml
-    
-        jq -r 'to_entries[] |
-          .key as $repoName |
-          "  - name: \($repoName)\n    last-date-modified: \"\"\n" +
-          (.value | map("    \(.property_name): \"\(.value)\"") | join("\n"))' repo-properties.json >> repo-properties.yaml
-    
+
+        {
+          echo "org: $ORG_NAME"
+          echo "repositories:"
+          jq -r '
+            to_entries[] |
+            .key as $repoName |
+            (
+              "  - name: \($repoName)" +
+              (
+                .value
+                | map(select(.value != ""))                # skip blank-value fields
+                | if length > 0 then
+                    "\n" + map("    \(.property_name): \"\(.value)\"") | join("\n")
+                  else
+                    ""
+                  end
+              )
+            )
+          ' repo-properties.json
+        } > repo-properties.yaml
+
         echo "YAML written to repo-properties.yaml"
 
     - name: Print out the repo-properties.yaml
