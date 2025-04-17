@@ -80,6 +80,12 @@ runs:
         echo "Full repo-properties.json file is:"
         cat repo-properties.json
 
+    - name: Confirm the template file exists
+      shell: bash
+      run: |
+        echo "The template file for JSON output is:"
+        cat ${{ inputs.template }}
+
     - name: Convert repo properties to YAML using template
       shell: bash
       run: |
