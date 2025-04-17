@@ -33,7 +33,7 @@ runs:
         echo "Org name is: ${ORG_NAME}"
         echo "${ORG_NAME}" > org-name.txt
         echo "Fetching repos for organization: ${{ inputs.org }}"
-        gh api --paginate "orgs/$ORG_NAME/repos" --jq '.[].full_name' > repo-list.txt
+        gh api --paginate "orgs/$ORG_NAME/repos" --jq '.[].name' > repo-list.txt
         echo "Repos written to repo-list.txt"
 
     - name: Print out all repos in file
