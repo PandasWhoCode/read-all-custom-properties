@@ -31,6 +31,13 @@ runs:
       run: |
         ORG_NAME=$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f1)
         echo "Org name is: ${ORG_NAME}"
+        cat "${ORG_NAME}" > repo-list.txt
         echo "Fetching repos for organization: ${{ inputs.org }}"
-        gh api --paginate "orgs/$ORG_NAME/repos" --jq '.[].full_name' > repo-list.txt
+        gh api --paginate "orgs/$ORG_NAME/repos" --jq '.[].full_name' >> repo-list.txt
         echo "Repos written to repo-list.txt"
+
+    - name: Print out all repos in file
+      shell: bash
+      run: |
+        echo "Full list of repos in org:"
+        cat repo-list.txt
