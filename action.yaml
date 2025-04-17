@@ -13,6 +13,9 @@ inputs:
   template:
     description: 'Template for Custom Property Fields'
     required: false
+  overwrite-existing-file:
+    description: 'Overwrite existing repo-properties.yaml with read values'
+    required: false
 
 runs:
   using: "composite"
@@ -55,7 +58,7 @@ runs:
         ORG_NAME="${GITHUB_REPOSITORY%%/*}"
         echo "Fetching custom properties for repos in org: ${ORG_NAME}"
         
-        echo "{" > repo-properties.json
+        echo "{" > read-repo-properties.json
         FIRST=1
         while IFS= read -r REPO_NAME; do
           echo "Getting properties for ${REPO_NAME}..."
@@ -63,22 +66,22 @@ runs:
         
           # If not the first, prepend a comma to separate JSON entries
           if [ "$FIRST" -eq 0 ]; then
-            echo "," >> repo-properties.json
+            echo "," >> read-repo-properties.json
           fi
           FIRST=0
         
           # Output as "repo-name": { ...props... }
-          echo "\"${REPO_NAME}\": $RESPONSE" >> repo-properties.json
+          echo "\"${REPO_NAME}\": $RESPONSE" >> read-repo-properties.json
         done < repo-list.txt
-        echo "}" >> repo-properties.json
+        echo "}" >> read-repo-properties.json
         
-        echo "Custom properties written to repo-properties.json"
+        echo "Custom properties written to read-repo-properties.json"
 
-    - name: Print out the full repo-properties.json file
+    - name: Print out the full read-repo-properties.json file
       shell: bash
       run: |
-        echo "Full repo-properties.json file is:"
-        cat repo-properties.json
+        echo "Full read-repo-properties.json file is:"
+        cat read-repo-properties.json
 
     - name: Confirm the template file exists
       shell: bash
@@ -114,17 +117,21 @@ runs:
                 | join("\n")
               )
             )
-          ' repo-properties.json
-        } > repo-properties.yaml
+          ' read-repo-properties.json
+        } > read-repo-properties.yaml
 
-        echo "YAML written to repo-properties.yaml"
-    
-    
-    
+        echo "YAML written to read-repo-properties.yaml"
 
-    - name: Print out the repo-properties.yaml
+    - name: Print out the read-repo-properties.yaml
       shell: bash
       run: |
-        echo "Full repo-properties.yaml file is:"
-        cat repo-properties.yaml
+        echo "Full read-repo-properties.yaml file is:"
+        cat read-repo-properties.yaml
+
+    - name: Overwrite existing file (if applicable)
+      if: inputs.overwrite-existing-file == true
+      shell: bash
+      run: |
+        echo "Overwriting existing repo-properties.yaml"
+        mv read-repo-properties.yaml repo-properties.yaml
 
