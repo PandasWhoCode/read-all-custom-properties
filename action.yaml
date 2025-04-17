@@ -43,3 +43,36 @@ runs:
         cat org-name.txt
         echo "Full list of repos in org:"
         cat repo-list.txt
+
+    - name: Fetch custom properties for each repo
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        ORG_NAME="${GITHUB_REPOSITORY%%/*}"
+        echo "Fetching custom properties for repos in org: ${ORG_NAME}"
+        
+        echo "{" > repo-properties.json
+        FIRST=1
+        while IFS= read -r REPO_NAME; do
+          echo "Getting properties for ${REPO_NAME}..."
+          RESPONSE=$(gh api "repos/${ORG_NAME}/${REPO_NAME}/properties/values" || echo "{}")
+        
+          # If not the first, prepend a comma to separate JSON entries
+          if [ "$FIRST" -eq 0 ]; then
+            echo "," >> repo-properties.json
+          fi
+          FIRST=0
+        
+          # Output as "repo-name": { ...props... }
+          echo "\"${REPO_NAME}\": $RESPONSE" >> repo-properties.json
+        done < repo-list.txt
+        echo "}" >> repo-properties.json
+        
+        echo "Custom properties written to repo-properties.json"
+
+    - name: Print out the full repo-properties.json file
+      shell: bash
+      run: |
+        echo "Full repo-properties.json file is:"
+        cat repo-properties.json
