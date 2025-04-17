@@ -15,6 +15,7 @@ inputs:
     required: false
   overwrite-existing-file:
     description: 'Overwrite existing repo-properties.yaml with read values'
+    default: false
     required: false
 
 runs:
