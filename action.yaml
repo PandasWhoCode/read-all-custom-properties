@@ -92,9 +92,9 @@ runs:
               "  - name: \($repoName)" +
               (
                 .value
-                | map(select(.value != ""))                # skip blank-value fields
+                | map(select(.value != ""))
                 | if length > 0 then
-                    "\n" + map("    \(.property_name): \"\(.value)\"") | join("\n")
+                    "\n" + (map("    \(.property_name): \"\(.value)\"") | join("\n"))
                   else
                     ""
                   end
@@ -104,6 +104,7 @@ runs:
         } > repo-properties.yaml
 
         echo "YAML written to repo-properties.yaml"
+    
 
     - name: Print out the repo-properties.yaml
       shell: bash
