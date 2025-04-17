@@ -10,6 +10,9 @@ inputs:
   token:
     description: 'Personal Access Token'
     required: true
+  template:
+    description: 'Template for Custom Property Fields'
+    required: false
 
 runs:
   using: "composite"
@@ -77,7 +80,7 @@ runs:
         echo "Full repo-properties.json file is:"
         cat repo-properties.json
 
-    - name: Convert repo properties JSON to YAML
+    - name: Convert repo properties to YAML using template
       shell: bash
       run: |
         ORG_NAME=$(cat org-name.txt)
@@ -85,25 +88,30 @@ runs:
         {
           echo "org: $ORG_NAME"
           echo "repositories:"
-          jq -r '
+          jq -r --argfile template ${{ inputs.template }} '
             to_entries[] |
             .key as $repoName |
+            .value as $props |
+            $template as $fields |
             (
-              "  - name: \($repoName)" +
+              "  - name: \($repoName)\n" +
               (
-                .value
-                | map(select(.value != ""))
-                | if length > 0 then
-                    "\n" + (map("    \(.property_name): \"\(.value)\"") | join("\n"))
-                  else
-                    ""
-                  end
+                $fields
+                | map(
+                    . as $key |
+                    (
+                      ($props | map({(.property_name): .value}) | add)[$key] // "" 
+                      | "    \($key): \"\(.)\""
+                    )
+                  )
+                | join("\n")
               )
             )
           ' repo-properties.json
         } > repo-properties.yaml
 
         echo "YAML written to repo-properties.yaml"
+    
     
 
     - name: Print out the repo-properties.yaml
