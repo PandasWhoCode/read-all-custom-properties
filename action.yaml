@@ -91,14 +91,15 @@ runs:
       run: |
         ORG_NAME=$(cat org-name.txt)
 
+        TEMPLATE=$(cat ${{ inputs.template }})
+
         {
           echo "org: $ORG_NAME"
           echo "repositories:"
-          jq -r --argfile template ${{ inputs.template }} '
+          jq -r --argjson fields "$TEMPLATE" '
             to_entries[] |
             .key as $repoName |
             .value as $props |
-            $template as $fields |
             (
               "  - name: \($repoName)\n" +
               (
@@ -117,6 +118,7 @@ runs:
         } > repo-properties.yaml
 
         echo "YAML written to repo-properties.yaml"
+    
     
     
 
