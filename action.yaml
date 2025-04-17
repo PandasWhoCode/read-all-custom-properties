@@ -30,8 +30,5 @@ runs:
         ORG_NAME=$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f1)
         echo "Org name is: ${ORG_NAME}"
         echo "Fetching repos for organization: ${{ inputs.org }}"
-        curl -s -H "Authorization: token ${{ inputs.token }}" \
-             -H "Accept: application/vnd.github+json" \
-             "https://api.github.com/orgs/${{ inputs.org }}/repos?per_page=100" |
-        jq -r '.[].full_name' > repo-list.txt
+        gh api --paginate "orgs/$ORG_NAME/repos" --jq '.[].full_name' > repo-list.txt
         echo "Repos written to repo-list.txt"
