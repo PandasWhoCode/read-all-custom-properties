@@ -14,9 +14,21 @@ inputs:
 runs:
   using: "composite"
   steps:
+
+    - name: Install yq (mikefarah's version)
+      shell: bash
+      run: |
+        sudo wget --quiet https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
+        sudo chmod +x /usr/bin/yq
+        yq --version  # confirm installed
+    
+    
+
     - name: List all repos in org
       shell: bash
       run: |
+        ORG_NAME=$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f1)
+        echo "Org name is: ${ORG_NAME}"
         echo "Fetching repos for organization: ${{ inputs.org }}"
         curl -s -H "Authorization: token ${{ inputs.token }}" \
              -H "Accept: application/vnd.github+json" \
