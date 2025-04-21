@@ -15,8 +15,8 @@ inputs:
     type: boolean
     default: false
     required: false
-  commit-changes:
-    description: 'Commit values read to the properties file'
+  dry-run-enabled:
+    description: 'Dry run the script'
     type: boolean
     default: false
     required: false
@@ -158,7 +158,7 @@ runs:
         echo "Overwrite complete"
 
     - name: Commit values to repo-properties.yaml
-      if: ${{ inputs.commit-changes == 'true' }}
+      if: ${{ inputs.dry-run-enabled != 'true' }}
       shell: bash
       run: |
         git config user.name "${{ inputs.commit-author-name }}"
