@@ -132,6 +132,7 @@ runs:
         cat read-repo-properties.yaml
 
     - name: Overwrite existing file (if applicable)
+      if: ${{ inputs.overwrite-existing-file == true }}
       shell: bash
       run: |
         echo "We are going to overwrite repo-properties.yaml"
