@@ -136,10 +136,8 @@ runs:
       shell: bash
       run: |
         echo "We are going to overwrite repo-properties.yaml"
-        echo "Here is the current value of inputs.overwrite-existing-file"
-        echo ${{ inputs.overwrite-existing-file }}
-#        echo "Overwriting existing repo-properties.yaml"
-#        mv read-repo-properties.yaml repo-properties.yaml
+        echo "Overwriting existing repo-properties.yaml"
+        mv read-repo-properties.yaml repo-properties.yaml
 #
 #    - name: Commit values to repo-properties.yaml
 #      if: ${{ inputs.commit-changes == true }}
