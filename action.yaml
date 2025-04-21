@@ -52,20 +52,12 @@ runs:
     - name: Extract property names into a JSON file
       shell: bash
       env:
-        GH_TOKEN: ${{ inputs.token }} # or use your PAT if needed
+        GH_TOKEN: ${{ inputs.token }}
       run: |
         ORG=$(cat org-name.txt)
         echo "Fetching property schema for org: $ORG"
         gh api --paginate "orgs/$ORG/properties/schema" | jq 'map(.property_name)' > property-names.json
         echo "Property names written to property-names.json"
-
-#    - name: Print out all repos in file
-#      shell: bash
-#      run: |
-#        echo "Org name is:"
-#        cat org-name.txt
-#        echo "Full list of repos in org:"
-#        cat repo-list.txt
 
     - name: Fetch custom properties for each repo
       shell: bash
@@ -93,20 +85,6 @@ runs:
         echo "}" >> read-repo-properties.json
         
         echo "Custom properties written to read-repo-properties.json"
-
-#    - name: Print out the full read-repo-properties.json file
-#      shell: bash
-#      run: |
-#        echo ""
-#        echo "Full read-repo-properties.json file is:"
-#        cat read-repo-properties.json
-#        echo ""
-
-#    - name: Confirm the template file exists
-#      shell: bash
-#      run: |
-#        echo "The template file for JSON output is:"
-#        cat property-names.json
 
     - name: Convert repo properties to YAML using template
       shell: bash
