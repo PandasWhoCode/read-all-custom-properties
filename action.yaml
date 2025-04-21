@@ -15,10 +15,12 @@ inputs:
     required: false
   overwrite-existing-file:
     description: 'Overwrite existing repo-properties.yaml with read values'
+    type: boolean
     default: false
     required: false
   commit-changes:
     description: 'Commit values read to the properties file'
+    type: boolean
     default: false
     required: false
   commit-author-name:
