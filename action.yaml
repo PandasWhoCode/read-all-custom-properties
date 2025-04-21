@@ -1,6 +1,6 @@
-name: 'Read Custom Properties of All Repos in Organization'
+name: 'Read Custom Properties of All Repos in an Organization'
 description: 'Read all the custom properties and values of all repos in an organization'
-author: 'Andrew Brandt <andrew.brandt@hashgraph.com>'
+author: 'Andrew Brandt <andrew.brandt@pandaswhocode.com>'
 organization: 'PandasWhoCode'
 branding:
   icon: 'check-circle'
@@ -30,7 +30,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-
     - name: Install yq (mikefarah's version)
       shell: bash
       run: |
@@ -50,26 +49,23 @@ runs:
         gh api --paginate "orgs/$ORG_NAME/repos" --jq '.[].name' > repo-list.txt
         echo "Repos written to repo-list.txt"
 
-    - name: Extract property names into a JSON array
+    - name: Extract property names into a JSON file
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.token }} # or use your PAT if needed
       run: |
         ORG=$(cat org-name.txt)
         echo "Fetching property schema for org: $ORG"
-
-        gh api --paginate "orgs/$ORG/properties/schema" \
-          | jq 'map(.property_name)' > property-names.json
-
+        gh api --paginate "orgs/$ORG/properties/schema" | jq 'map(.property_name)' > property-names.json
         echo "Property names written to property-names.json"
 
-    - name: Print out all repos in file
-      shell: bash
-      run: |
-        echo "Org name is:"
-        cat org-name.txt
-        echo "Full list of repos in org:"
-        cat repo-list.txt
+#    - name: Print out all repos in file
+#      shell: bash
+#      run: |
+#        echo "Org name is:"
+#        cat org-name.txt
+#        echo "Full list of repos in org:"
+#        cat repo-list.txt
 
     - name: Fetch custom properties for each repo
       shell: bash
@@ -98,17 +94,19 @@ runs:
         
         echo "Custom properties written to read-repo-properties.json"
 
-    - name: Print out the full read-repo-properties.json file
-      shell: bash
-      run: |
-        echo "Full read-repo-properties.json file is:"
-        cat read-repo-properties.json
+#    - name: Print out the full read-repo-properties.json file
+#      shell: bash
+#      run: |
+#        echo ""
+#        echo "Full read-repo-properties.json file is:"
+#        cat read-repo-properties.json
+#        echo ""
 
-    - name: Confirm the template file exists
-      shell: bash
-      run: |
-        echo "The template file for JSON output is:"
-        cat property-names.json
+#    - name: Confirm the template file exists
+#      shell: bash
+#      run: |
+#        echo "The template file for JSON output is:"
+#        cat property-names.json
 
     - name: Convert repo properties to YAML using template
       shell: bash
@@ -146,8 +144,10 @@ runs:
     - name: Print out the read-repo-properties.yaml
       shell: bash
       run: |
+        echo ""
         echo "Full read-repo-properties.yaml file is:"
         cat read-repo-properties.yaml
+        echo ""
 
     - name: Overwrite existing file (if applicable)
       if: ${{ inputs.overwrite-existing-file == 'true' }}
@@ -166,4 +166,3 @@ runs:
         git add repo-properties.yaml
         git commit -m "chore: commit repo custom properties to properties file" || echo "Nothing to commit"
         git push
-
