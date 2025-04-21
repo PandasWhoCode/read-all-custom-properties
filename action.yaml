@@ -157,4 +157,5 @@ runs:
         author_email: ${{ inputs.commit-author-email }}
         commit: --signoff
         message: "chore: commit repo custom properties to properties file"
+        push: true
 
