@@ -150,11 +150,10 @@ runs:
     - name: Commit values to repo-properties.yaml
       if: ${{ inputs.commit-changes == 'true' }}
       shell: bash
-      uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9.1.4
-      with:
-        cwd: "."
-        author_name: ${{ inputs.commit-author-name }}
-        author_email: ${{ inputs.commit-author-email }}
-        message: "chore: commit repo custom properties to properties file"
-        push: true
+      run: |
+        git config user.name "${{ inputs.commit-author-name }}"
+        git config user.email "${{ inputs.commit-author-email }}"
+        git add repo-properties.yaml
+        git commit -m "chore: commit repo custom properties to properties file" || echo "Nothing to commit"
+        git push
 
