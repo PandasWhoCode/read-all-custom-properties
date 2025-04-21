@@ -132,11 +132,22 @@ runs:
         cat read-repo-properties.yaml
 
     - name: Overwrite existing file (if applicable)
-      if: ${{ inputs.overwrite-existing-file == true }}
       shell: bash
       run: |
-        echo "We are going to overwrite repo-properties.yaml
-        echo "Overwriting existing repo-properties.yaml"
-        mv read-repo-properties.yaml repo-properties.yaml
+        echo "We are going to overwrite repo-properties.yaml"
+        echo "Here is the current value of inputs.overwrite-existing-file"
+        echo ${{ inputs.overwrite-existing-file }}
+#        echo "Overwriting existing repo-properties.yaml"
+#        mv read-repo-properties.yaml repo-properties.yaml
+#
+#    - name: Commit values to repo-properties.yaml
+#      if: ${{ inputs.commit-changes == true }}
+#      shell: bash
+#      uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9.1.4
+#      with:
+#        cwd: "."
+#        author_name: ${{ secrets.SVCS_GIT_USER_NAME }}
+#        author_email: ${{ secrets.SVCS_GIT_USER_EMAIL }}
+#        commit: --signoff
+#        message: "chore: commit repo custom properties to properties file"
 
-    
