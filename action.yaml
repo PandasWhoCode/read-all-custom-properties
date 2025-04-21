@@ -41,6 +41,18 @@ runs:
         sudo chmod +x /usr/bin/yq
         yq --version  # confirm installed
 
+    - name: List all repos in org
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        ORG_NAME=$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f1)
+        echo "Org name is: ${ORG_NAME}"
+        echo "${ORG_NAME}" > org-name.txt
+        echo "Fetching repos for organization: ${{ inputs.org }}"
+        gh api --paginate "orgs/$ORG_NAME/repos" --jq '.[].name' > repo-list.txt
+        echo "Repos written to repo-list.txt"
+
     - name: Extract property names into a JSON array
       shell: bash
       env:
@@ -53,18 +65,6 @@ runs:
           | jq 'map(.property_name)' > property-names.json
 
         echo "Property names written to property-names.json"
-
-    - name: List all repos in org
-      shell: bash
-      env:
-        GH_TOKEN: ${{ inputs.token }}
-      run: |
-        ORG_NAME=$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f1)
-        echo "Org name is: ${ORG_NAME}"
-        echo "${ORG_NAME}" > org-name.txt
-        echo "Fetching repos for organization: ${{ inputs.org }}"
-        gh api --paginate "orgs/$ORG_NAME/repos" --jq '.[].name' > repo-list.txt
-        echo "Repos written to repo-list.txt"
 
     - name: Print out all repos in file
       shell: bash
