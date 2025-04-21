@@ -41,6 +41,19 @@ runs:
         sudo chmod +x /usr/bin/yq
         yq --version  # confirm installed
 
+    - name: Extract property names into a JSON array
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }} # or use your PAT if needed
+      run: |
+        ORG=$(cat org-name.txt)
+        echo "Fetching property schema for org: $ORG"
+
+        gh api --paginate "orgs/$ORG/properties/schema" \
+          | jq 'map(.property_name)' > property-names.json
+
+        echo "Property names written to property-names.json"
+
     - name: List all repos in org
       shell: bash
       env:
@@ -98,14 +111,14 @@ runs:
       shell: bash
       run: |
         echo "The template file for JSON output is:"
-        cat ${{ inputs.template }}
+        cat property-names.json
 
     - name: Convert repo properties to YAML using template
       shell: bash
       run: |
         ORG_NAME=$(cat org-name.txt)
 
-        TEMPLATE=$(cat ${{ inputs.template }})
+        TEMPLATE=$(cat property-names.json)
 
         {
           echo "org: $ORG_NAME"
