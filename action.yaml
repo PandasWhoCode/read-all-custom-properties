@@ -145,15 +145,15 @@ runs:
         mv read-repo-properties.yaml repo-properties.yaml
         echo "Overwrite complete"
 
-    - name: Commit values to repo-properties.yaml
-      if: ${{ inputs.commit-changes == 'true' }}
-      shell: bash
-      uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9.1.4
-      with:
-        cwd: "."
-        author_name: ${{ inputs.commit-author-name }}
-        author_email: ${{ inputs.commit-author-email }}
-        commit: --signoff
-        message: "chore: commit repo custom properties to properties file"
-        push: true
-
+#    - name: Commit values to repo-properties.yaml
+#      if: ${{ inputs.commit-changes == 'true' }}
+#      shell: bash
+#      uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9.1.4
+#      with:
+#        cwd: "."
+#        author_name: ${{ inputs.commit-author-name }}
+#        author_email: ${{ inputs.commit-author-email }}
+#        commit: --signoff
+#        message: "chore: commit repo custom properties to properties file"
+#        push: true
+#
