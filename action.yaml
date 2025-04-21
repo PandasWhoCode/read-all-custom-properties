@@ -17,6 +17,10 @@ inputs:
     description: 'Overwrite existing repo-properties.yaml with read values'
     default: false
     required: false
+  commit-changes:
+    description: 'Commit values read to the repo'
+    default: false
+    required: false
 
 runs:
   using: "composite"
@@ -28,8 +32,6 @@ runs:
         sudo wget --quiet https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
         sudo chmod +x /usr/bin/yq
         yq --version  # confirm installed
-    
-    
 
     - name: List all repos in org
       shell: bash
@@ -130,9 +132,20 @@ runs:
         cat read-repo-properties.yaml
 
     - name: Overwrite existing file (if applicable)
-      if: inputs.overwrite-existing-file == true
+      if: ${{ inputs.overwrite-existing-file == true }}
       shell: bash
       run: |
         echo "Overwriting existing repo-properties.yaml"
         mv read-repo-properties.yaml repo-properties.yaml
+
+    - name: Commit values read to repo-properties.yaml
+      if: ${{ inputs.commit-changes == true }}
+      shell: bash
+      uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9.1.4
+      with:
+        cwd: "."
+        author_name: ${{ secrets.SVCS_GIT_USER_NAME }}
+        author_email: ${{ secrets.SVCS_GIT_USER_EMAIL }}
+        commit: --signoff
+        message: "chore: commit repo custom properties to properties file"
 
