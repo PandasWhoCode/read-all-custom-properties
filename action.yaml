@@ -151,31 +151,39 @@ runs:
       run: |
         # Import GPG key
         echo "$GPG_PRIVATE_KEY" | gpg --batch --import
-
-        # Get the GPG key ID
+    
+        # Get key ID
         KEY_ID=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec/{print $5}' | head -n1)
-
-        # Trust the key (avoid interactive trust prompts)
-        echo -e "5\ny\n" | gpg --command-fd 0 --expert --edit-key "$KEY_ID" trust
-
-        # Configure Git to use this key
+    
+        # Trust the key
+        echo -e "5\ny\n" | gpg --batch --yes --command-fd 0 --edit-key "$KEY_ID" trust
+    
+        # Configure GPG for non-interactive use
+        mkdir -p ~/.gnupg
+        echo "use-agent" >> ~/.gnupg/gpg.conf
+        echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+        echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+        echo RELOADAGENT | gpg-connect-agent
+        export GPG_TTY=$(tty)
+    
+        # Configure Git
         git config --global user.name "${{ inputs.commit-author-name }}"
         git config --global user.email "${{ inputs.commit-author-email }}"
         git config --global commit.gpgsign true
         git config --global user.signingkey "$KEY_ID"
         git config --global gpg.program gpg
-
-        # Prevent pinentry prompt (for passphrase-protected keys)
-        echo "allow-loopback-pinentry" >> ~/.gnupg/gpg.conf
-        echo "use-agent" >> ~/.gnupg/gpg.conf
-        echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
-        echo RELOADAGENT | gpg-connect-agent
+    
+        # Set passphrase environment variable for Git GPG signing
+        export GIT_COMMITTER_NAME="${{ inputs.commit-author-name }}"
+        export GIT_COMMITTER_EMAIL="${{ inputs.commit-author-email }}"
         export GPG_TTY=$(tty)
-
-        # Make the commit
-        git add repo-properties.yaml
+    
+        # Create the commit (sign with loopback)
         echo "$GPG_PASSPHRASE" | \
-          gpg --batch --yes --passphrase-fd 0 \
-          git commit -S -m "chore: commit repo custom properties to properties file" || echo "Nothing to commit"
-
+        gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback \
+        --local-user "$KEY_ID" \
+        --output /dev/null --sign - 2>/dev/null
+    
+        git add repo-properties.yaml
+        git commit -S -m "chore: commit repo custom properties to properties file" || echo "Nothing to commit"
         git push
