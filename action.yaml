@@ -185,5 +185,5 @@ runs:
         --output /dev/null --sign - 2>/dev/null
     
         git add repo-properties.yaml
-        git commit -S -m "chore: commit repo custom properties to properties file" || echo "Nothing to commit"
+        git commit -sSm "chore: commit repo custom properties to properties file" || echo "Nothing to commit"
         git push
