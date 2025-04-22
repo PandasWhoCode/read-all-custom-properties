@@ -26,10 +26,10 @@ inputs:
   commit-author-email:
     description: 'Author of commit email address:'
     required: true
-  gpg-key-contents:
+  commit-author-gpg-key-contents:
     description: 'GPG Key Contents'
     required: true
-  gpg-key-passphrase:
+  commit-author-gpg-key-passphrase:
     description: 'GPG Key Passphrase'
     required: true
 
@@ -146,8 +146,8 @@ runs:
       if: ${{ inputs.dry-run-enabled != 'true' }}
       shell: bash
       env:
-        GPG_PRIVATE_KEY: ${{ inputs.gpg-key-contents }}
-        GPG_PASSPHRASE: ${{ inputs.gpg-key-passphrase }}
+        GPG_PRIVATE_KEY: ${{ inputs.commit-author-gpg-key-contents }}
+        GPG_PASSPHRASE: ${{ inputs.commit-author-gpg-key-passphrase }}
       run: |
         # Import GPG key
         echo "$GPG_PRIVATE_KEY" | gpg --batch --import
