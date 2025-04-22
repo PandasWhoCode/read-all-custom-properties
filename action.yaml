@@ -1,0 +1,188 @@
+name: 'Read Custom Properties'
+description: 'Read all the custom properties and values of all repos in an organization'
+author: 'Andrew Brandt <andrew.brandt@pandaswhocode.com>'
+organization: 'PandasWhoCode'
+branding:
+  icon: 'check-circle'
+  color: 'black'
+
+inputs:
+  token:
+    description: 'Personal Access Token'
+    required: true
+  overwrite-existing-file:
+    description: 'Overwrite existing repo-properties.yaml with read values'
+    type: boolean
+    default: false
+    required: false
+  dry-run-enabled:
+    description: 'Dry run the script'
+    type: boolean
+    default: false
+    required: false
+  commit-author-name:
+    description: 'Author of commit name:'
+    required: true
+  commit-author-email:
+    description: 'Author of commit email address:'
+    required: true
+  commit-author-gpg-key-contents:
+    description: 'GPG Key Contents'
+    required: true
+  commit-author-gpg-key-passphrase:
+    description: 'GPG Key Passphrase'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install yq (mikefarah's version)
+      shell: bash
+      run: |
+        sudo wget --quiet https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
+        sudo chmod +x /usr/bin/yq
+        yq --version  # confirm installed
+
+    - name: List all repos in org
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        ORG_NAME=$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f1)
+        echo "Org name is: ${ORG_NAME}"
+        echo "${ORG_NAME}" > org-name.txt
+        echo "Fetching repos for organization: ${{ inputs.org }}"
+        gh api --paginate "orgs/$ORG_NAME/repos" --jq '.[].name' > repo-list.txt
+        echo "Repos written to repo-list.txt"
+
+    - name: Extract property names into a JSON file
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        ORG=$(cat org-name.txt)
+        echo "Fetching property schema for org: $ORG"
+        gh api --paginate "orgs/$ORG/properties/schema" | jq 'map(.property_name)' > property-names.json
+        echo "Property names written to property-names.json"
+
+    - name: Fetch custom properties for each repo
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        ORG_NAME="${GITHUB_REPOSITORY%%/*}"
+        echo "Fetching custom properties for repos in org: ${ORG_NAME}"
+        
+        echo "{" > read-repo-properties.json
+        FIRST=1
+        while IFS= read -r REPO_NAME; do
+          echo "Getting properties for ${REPO_NAME}..."
+          RESPONSE=$(gh api "repos/${ORG_NAME}/${REPO_NAME}/properties/values" || echo "{}")
+        
+          # If not the first, prepend a comma to separate JSON entries
+          if [ "$FIRST" -eq 0 ]; then
+            echo "," >> read-repo-properties.json
+          fi
+          FIRST=0
+        
+          # Output as "repo-name": { ...props... }
+          echo "\"${REPO_NAME}\": $RESPONSE" >> read-repo-properties.json
+        done < repo-list.txt
+        echo "}" >> read-repo-properties.json
+        
+        echo "Custom properties written to read-repo-properties.json"
+
+    - name: Convert repo properties to YAML using template
+      shell: bash
+      run: |
+        ORG_NAME=$(cat org-name.txt)
+
+        TEMPLATE=$(cat property-names.json)
+
+        {
+          echo "org: $ORG_NAME"
+          echo "repositories:"
+          jq -r --argjson fields "$TEMPLATE" '
+            to_entries[] |
+            .key as $repoName |
+            .value as $props |
+            (
+              "  - name: \($repoName)\n" +
+              (
+                $fields
+                | map(
+                    . as $key |
+                    (
+                      ($props | map({(.property_name): .value}) | add)[$key] // "" 
+                      | "    \($key): \"\(.)\""
+                    )
+                  )
+                | join("\n")
+              )
+            )
+          ' read-repo-properties.json
+        } > read-repo-properties.yaml
+
+        echo "YAML written to read-repo-properties.yaml"
+
+    - name: Print out the read-repo-properties.yaml
+      shell: bash
+      run: |
+        echo ""
+        echo "Full read-repo-properties.yaml file is:"
+        cat read-repo-properties.yaml
+        echo ""
+
+    - name: Overwrite existing file (if applicable)
+      if: ${{ inputs.overwrite-existing-file == 'true' }}
+      shell: bash
+      run: |
+        echo "Overwriting existing repo-properties.yaml"
+        mv read-repo-properties.yaml repo-properties.yaml
+        echo "Overwrite complete"
+
+    - name: Commit values to repo-properties.yaml
+      if: ${{ inputs.dry-run-enabled != 'true' }}
+      shell: bash
+      env:
+        GPG_PRIVATE_KEY: ${{ inputs.commit-author-gpg-key-contents }}
+        GPG_PASSPHRASE: ${{ inputs.commit-author-gpg-key-passphrase }}
+      run: |
+        # Import GPG key
+        echo "${GPG_PRIVATE_KEY}" | gpg --batch --import
+    
+        # Get key ID
+        KEY_ID=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec/{print $5}' | head -n1)
+    
+        # Trust the key
+        echo -e "5\ny\n" | gpg --batch --yes --command-fd 0 --edit-key "$KEY_ID" trust
+    
+        # Configure GPG for non-interactive use
+        mkdir -p ~/.gnupg
+        echo "use-agent" >> ~/.gnupg/gpg.conf
+        echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+        echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+        echo RELOADAGENT | gpg-connect-agent
+        export GPG_TTY=$(tty)
+    
+        # Configure Git
+        git config --global user.name "${{ inputs.commit-author-name }}"
+        git config --global user.email "${{ inputs.commit-author-email }}"
+        git config --global commit.gpgsign true
+        git config --global user.signingkey "${KEY_ID}"
+        git config --global gpg.program gpg
+    
+        # Set passphrase environment variable for Git GPG signing
+        export GIT_COMMITTER_NAME="${{ inputs.commit-author-name }}"
+        export GIT_COMMITTER_EMAIL="${{ inputs.commit-author-email }}"
+        export GPG_TTY=$(tty)
+    
+        # Create the commit (sign with loopback)
+        echo "${GPG_PASSPHRASE}" | \
+        gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback \
+        --local-user "${KEY_ID}" \
+        --output /dev/null --sign - 2>/dev/null
+    
+        git add repo-properties.yaml
+        git commit -sS -m "chore: commit repo custom properties to properties file" || echo "Nothing to commit"
+        git push
