@@ -1,4 +1,4 @@
-name: 'Read Custom Properties of All Repos in an Organization'
+name: 'Read Custom Properties'
 description: 'Read all the custom properties and values of all repos in an organization'
 author: 'Andrew Brandt <andrew.brandt@pandaswhocode.com>'
 organization: 'PandasWhoCode'
@@ -32,7 +32,6 @@ inputs:
   commit-author-gpg-key-passphrase:
     description: 'GPG Key Passphrase'
     required: true
-
 
 runs:
   using: "composite"
