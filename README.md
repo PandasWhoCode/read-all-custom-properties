@@ -18,7 +18,7 @@ file.
 
 ## Fine Grained Token Requirements
 
-To run the action within your Github CI/CD pipeline you will need to create a
+To run the action within your GitHub CI/CD pipeline you will need to create a
 fine-grained token with the following permissions:
 
 ### Organization Permissions
@@ -27,7 +27,7 @@ fine-grained token with the following permissions:
 
 ### Additional Information
 
-- [Github API for custom property for an organization](https://docs.github.com/en/rest/orgs/custom-properties?apiVersion=2022-11-28#create-or-update-a-custom-property-for-an-organization)
+- [GitHub API for custom property for an organization](https://docs.github.com/en/rest/orgs/custom-properties?apiVersion=2022-11-28#create-or-update-a-custom-property-for-an-organization)
 - [Fine-grained personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token)
 - The owner of the fine-grained token must have full administrative rights to the organization.
 
@@ -35,15 +35,15 @@ fine-grained token with the following permissions:
 
 ## 📦 Inputs
 
-| Name                      | Description                                                            | Required | Default |
-|---------------------------|------------------------------------------------------------------------|-----|---------|
-| `token`                   | GitHub Personal Access Token (Fine-Grained with `Read` org scope)      | ✅ Yes | —       |
-| `overwrite-existing-file` | Boolean for choosing to overwrite `repo-properties.json`, if it exists | 🟥  No | `false` |
-| `dry-run-enabled`         | Flag to dry-run the script, will not commit in repo.                   | 🟥  No | `false` |
-| `commit-author-name`      | Author Name on the commit that will be created                         | ✅ Yes | -       |
-| `commit-author-email`     | Author Email on the commit that will be created                        | ✅ Yes | -       |
-| `commit-author-gpg-key-contents`   | GPG Key for the commit that will be created (must match the `email`)   | ✅ Yes | -       |
-| `commit-author-gpg-key-passphrase`    | GPG Key Passphrase for the key to sign the commit that will be created | ✅ Yes | -       |
+| Name                               | Description                                                            | Required | Default |
+|------------------------------------|------------------------------------------------------------------------|----------|---------|
+| `token`                            | GitHub Personal Access Token (Fine-Grained with `Read` org scope)      | ✅ Yes    | —       |
+| `overwrite-existing-file`          | Boolean for choosing to overwrite `repo-properties.json`, if it exists | 🟥  No   | `false` |
+| `dry-run-enabled`                  | Flag to dry-run the script, will not commit in repo.                   | 🟥  No   | `false` |
+| `commit-author-name`               | Author Name on the commit that will be created                         | ✅ Yes    | -       |
+| `commit-author-email`              | Author Email on the commit that will be created                        | ✅ Yes    | -       |
+| `commit-author-gpg-key-contents`   | GPG Key for the commit that will be created (must match the `email`)   | ✅ Yes    | -       |
+| `commit-author-gpg-key-passphrase` | GPG Key Passphrase for the key to sign the commit that will be created | ✅ Yes    | -       |
 
 ---
 
