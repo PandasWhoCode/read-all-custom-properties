@@ -146,8 +146,8 @@ runs:
       if: ${{ inputs.dry-run-enabled != 'true' }}
       shell: bash
       env:
-        GPG_PRIVATE_KEY: ${{ inputs.GPG_KEY_CONTENTS }}
-        GPG_PASSPHRASE: ${{ inputs.GPG_KEY_PASSPHRASE }}
+        GPG_PRIVATE_KEY: ${{ inputs.gpg-key-contents }}
+        GPG_PASSPHRASE: ${{ inputs.gpg-key-passphrase }}
       run: |
         # Import GPG key
         echo "$GPG_PRIVATE_KEY" | gpg --batch --import
