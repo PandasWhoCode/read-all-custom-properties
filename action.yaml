@@ -150,7 +150,7 @@ runs:
         GPG_PASSPHRASE: ${{ inputs.commit-author-gpg-key-passphrase }}
       run: |
         # Import GPG key
-        echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+        echo "${GPG_PRIVATE_KEY}" | gpg --batch --import
     
         # Get key ID
         KEY_ID=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec/{print $5}' | head -n1)
@@ -170,7 +170,7 @@ runs:
         git config --global user.name "${{ inputs.commit-author-name }}"
         git config --global user.email "${{ inputs.commit-author-email }}"
         git config --global commit.gpgsign true
-        git config --global user.signingkey "$KEY_ID"
+        git config --global user.signingkey "${KEY_ID}"
         git config --global gpg.program gpg
     
         # Set passphrase environment variable for Git GPG signing
@@ -179,9 +179,9 @@ runs:
         export GPG_TTY=$(tty)
     
         # Create the commit (sign with loopback)
-        echo "$GPG_PASSPHRASE" | \
+        echo "${GPG_PASSPHRASE}" | \
         gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback \
-        --local-user "$KEY_ID" \
+        --local-user "${KEY_ID}" \
         --output /dev/null --sign - 2>/dev/null
     
         git add repo-properties.yaml
