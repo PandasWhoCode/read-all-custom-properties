@@ -25,6 +25,11 @@ fine-grained token with the following permissions:
 
 - Read access to organization custom properties
 
+### Repository Permissions
+
+- Read access to Repository Metadata
+- Read and Write access to Repository contents
+
 ### Additional Information
 
 - [GitHub API for custom property for an organization](https://docs.github.com/en/rest/orgs/custom-properties?apiVersion=2022-11-28#create-or-update-a-custom-property-for-an-organization)
@@ -37,7 +42,7 @@ fine-grained token with the following permissions:
 
 | Name                               | Description                                                            | Required | Default |
 |------------------------------------|------------------------------------------------------------------------|----------|---------|
-| `token`                            | GitHub Personal Access Token (Fine-Grained with `Read` org scope)      | ✅ Yes    | —       |
+| `token`                            | GitHub Personal Access Token (Fine-Grained with: Organization custom properties `Read`, Repository contents `Read and Write` scope)     | ✅ Yes    | —       |
 | `overwrite-existing-file`          | Boolean for choosing to overwrite `repo-properties.json`, if it exists | 🟥  No   | `false` |
 | `dry-run-enabled`                  | Flag to dry-run the script, will not commit in repo.                   | 🟥  No   | `false` |
 | `commit-author-name`               | Author Name on the commit that will be created                         | ✅ Yes    | -       |
