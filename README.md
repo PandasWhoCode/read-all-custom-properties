@@ -40,15 +40,15 @@ fine-grained token with the following permissions:
 
 ## 📦 Inputs
 
-| Name                               | Description                                                            | Required | Default |
-|------------------------------------|------------------------------------------------------------------------|----------|---------|
-| `token`                            | GitHub Personal Access Token (Fine-Grained with: Organization custom properties `Read`, Repository contents `Read and Write` scope)     | ✅ Yes    | —       |
-| `overwrite-existing-file`          | Boolean for choosing to overwrite `repo-properties.json`, if it exists | 🟥  No   | `false` |
-| `dry-run-enabled`                  | Flag to dry-run the script, will not commit in repo.                   | 🟥  No   | `false` |
-| `commit-author-name`               | Author Name on the commit that will be created                         | ✅ Yes    | -       |
-| `commit-author-email`              | Author Email on the commit that will be created                        | ✅ Yes    | -       |
-| `commit-author-gpg-key-contents`   | GPG Key for the commit that will be created (must match the `email`)   | ✅ Yes    | -       |
-| `commit-author-gpg-key-passphrase` | GPG Key Passphrase for the key to sign the commit that will be created | ✅ Yes    | -       |
+| Name                               | Description                                                                                                                         | Required | Default |
+|------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|----------|---------|
+| `token`                            | GitHub Personal Access Token (Fine-Grained with: Organization custom properties `Read`, Repository contents `Read and Write` scope) | ✅ Yes    | —       |
+| `overwrite-existing-file`          | Boolean for choosing to overwrite `repo-properties.json`, if it exists                                                              | 🟥  No   | `false` |
+| `dry-run-enabled`                  | Flag to dry-run the script, will not commit in repo.                                                                                | 🟥  No   | `false` |
+| `commit-author-name`               | Author Name on the commit that will be created                                                                                      | ✅ Yes    | -       |
+| `commit-author-email`              | Author Email on the commit that will be created                                                                                     | ✅ Yes    | -       |
+| `commit-author-gpg-key-contents`   | GPG Key for the commit that will be created (must match the `email`)                                                                | ✅ Yes    | -       |
+| `commit-author-gpg-key-passphrase` | GPG Key Passphrase for the key to sign the commit that will be created                                                              | ✅ Yes    | -       |
 
 ---
 
